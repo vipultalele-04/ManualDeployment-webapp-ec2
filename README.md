@@ -45,8 +45,11 @@ node index.js &
 
 Configured Security Group inbound rules:
 Port 22 (SSH) — for remote access
+
 Port 80 (HTTP) — for web traffic
+
 Port 3000 (Node.js) — for direct app access
+
 port 443 (HTTPS) - for secure web traffic(SSL/TLS)
 
 ### 3. Connect to EC2
