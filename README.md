@@ -1,95 +1,80 @@
-# Deploying an Application on AWS EC2
+# Manual Deployment of Web App on AWS EC2
 
-## Prerequisites
-Before deploying your application on AWS EC2, ensure you have:
-- An AWS account
-- AWS CLI installed and configured (`aws configure`)
-- SSH key pair (`.pem` file) for EC2 access
-- A pre-built application ready for deployment
+A React web application manually deployed on an AWS EC2 instance — no containers, no orchestration, just raw server setup and deployment.
 
-## Step 1: Launch an EC2 Instance
-1. Log in to AWS Management Console.
-2. Navigate to **EC2** > **Instances**.
-3. Click **Launch Instance**.
-4. Choose an Amazon Machine Image (AMI), e.g., **Amazon Linux 2**.
-5. Select an instance type (e.g., `t2.micro` for free-tier eligibility).
-6. Configure security group:
-   - Allow **SSH (port 22)** for access.
-   - Allow necessary ports (e.g., **80, 443 for web apps**).
-7. Add a key pair for SSH access.
-8. Launch the instance.
+🔗 **Live Demo:** [http://43.204.32.94:3000/](http://43.204.32.94:3000/)
 
-## Step 2: Connect to the EC2 Instance
-```sh
-ssh -i your-key.pem ec2-user@your-ec2-public-ip
+---
+
+## Tech Stack
+
+- **Clone:** GitHub
+- **Hosting:** AWS EC2 (Ubuntu)
+- **Runtime:** Node.js
+- **Reverse Proxy:** NGINX (port 3000)
+- **Process manager — keeps app alive:** PM2
+---
+
+
+## Local Setup
+
+**Prerequisites:** Node.js 14+, npm
+
+```bash
+# Clone the repo
+git clone https://github.com/vipultalele-04/ManualDeployment-webapp-ec2.git
+cd ManualDeployment-webapp-ec2
+
+# Install dependencies
+npm install
+
+#Start the application
+node index.js & 
 ```
 
-## Step 3: Update and Install Dependencies
-```sh
-sudo yum update -y   # Amazon Linux
-sudo apt update -y   # Ubuntu/Debian
+---
 
-# Install required packages (example for a web app)
-sudo yum install -y git nginx nodejs
+## AWS EC2 Manual Deployment Steps
+
+### 1. Launch EC2 Instance
+- AMI: Ubuntu 22.04 LTS
+- Instance type: t2.micro (free tier)
+- Add security group
+
+### 2. Security group configuration
+
+Configured Security Group inbound rules:
+Port 22 (SSH) — for remote access
+Port 80 (HTTP) — for web traffic
+Port 3000 (Node.js) — for direct app access
+port 443 (HTTPS) - for secure web traffic(SSL/TLS)
+
+### 3. Connect to EC2
+
+```bash
+ssh -i your-key.pem ubuntu@<EC2_PUBLIC_IP>
 ```
 
-## Step 4: Deploy Your Application
-1. Clone your application repository:
-   ```sh
-   git clone https://github.com/your-repo/app.git
-   cd app
-   ```
-2. Install dependencies:
-   ```sh
-   npm install  # For Node.js apps
-   ```
-3. Start the application:
-   ```sh
-   node server.js &
-   ```
+### 4. Clone & Run the App
 
-## Step 5: Configure Firewall and Security Group
-Ensure your EC2 instance allows inbound traffic on required ports:
-```sh
-sudo firewall-cmd --add-service=http --permanent
-sudo firewall-cmd --reload
+```bash
+git clone https://github.com/vipultalele-04/ManualDeployment-webapp-ec2.git
+cd ManualDeployment-webapp-ec2
+npm install
+node index.js &
 ```
 
-Modify security group in AWS to allow necessary ports.
+### 5. Keep App Running (optional)
 
-## Step 6: Set Up a Reverse Proxy (Optional)
-For production deployments, use Nginx as a reverse proxy:
-```sh
-sudo nano /etc/nginx/nginx.conf
-```
-Configure the `server` block:
-```nginx
-server {
-    listen 80;
-    server_name your-ec2-public-ip;
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-Restart Nginx:
-```sh
-sudo systemctl restart nginx
-```
-
-## Step 7: Enable Auto-Start (Optional)
-Use **PM2** to keep your app running:
-```sh
-npm install -g pm2
-pm2 start server.js
-pm2 startup
+```bash
+# Install pm2 to keep app alive after SSH disconnect
+sudo npm install -g pm2
+pm2 start "npm start" --name webapp
 pm2 save
 ```
 
-## Step 8: Access Your Application
-Visit `http://your-ec2-public-ip` in a browser.
+### 6. Access Your Application
 
-## Conclusion
-Your application is now live on AWS EC2! 🎉 For production, consider using **Elastic Load Balancing (ELB)** and **Auto Scaling** for better scalability.
+Visit http://your-ec2-public-ip:port in a browser.
+---
+
